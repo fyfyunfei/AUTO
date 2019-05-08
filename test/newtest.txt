@@ -1,0 +1,10 @@
+*** Settings ***
+Library           D:/Python36/Lib/site-packages/Selenium2Library
+
+*** Test Cases ***
+login page
+    Open Browser    http://bdosdowell.com/    chrome
+    Maximize Browser Window
+    input text    id = username    superadmin
+    input text    id = password    jupiter123
+    Click Button    id = login

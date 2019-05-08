@@ -1,0 +1,99 @@
+*** Settings ***
+Library           Selenium2Library
+Library           OperatingSystem
+
+*** Keywords ***
+登录信息
+    [Arguments]    ${url}    ${unm}    ${pwd}
+    [Documentation]    输入网址 ，输入用户名，输入密码，点击登录
+    Open Browser    ${url}    chrome
+    Maximize Browser Window
+    Input Text    id= username    ${unm}
+    Input Password    id= password    ${pwd}
+    Click Button    id= login
+    Sleep    5
+    ${value}    Get text    //*[@id="header"]/div[3]/div/span/span[2]
+    Should Be Equal    ${value}    ${unm}
+
+页面选择
+    [Arguments]    ${xpath}
+    [Documentation]    选择tab页面
+    Click Element    Xpath =${xpath}
+
+新增
+    [Arguments]    ${xpath}    ${num}    ${name}
+    [Documentation]    选择tab页面
+    Click Element    Xpath =${xpath}
+    Click Element    Xpath = /html/body/div[3]/div/div[2]/div/div/div[1]
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[1]/div[2]/input    ${num}
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[2]/div[2]/input    ${name}
+    Click Button    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/div/button[1]
+    sleep    3
+    ${value}    Get text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[1]/h4    #获取新增弹框名称
+    should be empty    ${value}    \    #若获取弹框名称为空值，弹框关闭
+    Element Should Contain    Xpath = //*[@id="body"]/div/div[2]/div/div[1]    ${name}    message= 列表中包括新增项目    #返回列表内容，包括新增的项目名称
+
+tear
+    ${RunOutput}=    Run    taskkill \ /F /IM chromedriver.exe
+    log    ${RunOutput}=
+    #${RunOutput}=    Run    taskkill \ /F /IM ieromedriver.exe
+    #log    ${RunOutput}=
+    [Teardown]
+
+取消新增
+    [Arguments]    ${xpath}    ${num}    ${name}
+    [Documentation]    选择tab页面
+    Click Element    Xpath =${xpath}
+    Click Element    Xpath = /html/body/div[3]/div/div[2]/div/div/div[1]
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[1]/div[2]/input    ${num}
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[2]/div[2]/input    ${name}
+    Click Button    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/div/button[2]
+    sleep    3
+    ${value}    Get text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[1]/h4
+    should be empty    ${value}
+    Page Should Not Contain    ${name}
+
+删除
+    [Arguments]    ${messagt}    ${title}
+    [Timeout]
+    Reload Page    #刷新页面
+    sleep    3
+    Click Element    Xpath = //*[@id="body"]/div/div[2]/div/div[1]/table/tbody/tr[2]/td[7]/div/a[3]
+    #wait until page contains element    Xpath=/html/body/div[3]/div/div[2]/div/div
+    sleep    3
+    ${message}=    Get Text    Xpath= /html/body/div[3]/div/div[2]/div/div/div[2]/div[1]
+    Should Be Equal    ${message}    ${messagt}    #验证删除提示框内容
+    ${tit}=    Get Text    Xpath= /html/body/div[3]/div/div[2]/div/div/div[1]
+    Should Be Equal    ${tit}    ${title}    #验证删除提示框标题
+    sleep    2
+    Click Button    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div[2]/div/button[2]    #点击取消按钮
+    Page Should Contain    test00004    #验证页面包括“test00004”
+    sleep    3
+    Click Element    Xpath = //*[@id="body"]/div/div[2]/div/div[1]/table/tbody/tr[2]/td[7]/div/a[3]
+    #wait until page contains element    Xpath=/html/body/div[3]/div/div[2]/div/div
+    sleep    3
+    ${message}=    Get Text    Xpath= /html/body/div[3]/div/div[2]/div/div/div[2]/div[1]
+    Should Be Equal    ${message}    ${messagt}    #验证删除提示框内容
+    ${tit}=    Get Text    Xpath= /html/body/div[3]/div/div[2]/div/div/div[1]
+    Should Be Equal    ${tit}    ${title}    #验证删除提示框标题
+    sleep    2
+    Click Button    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div[2]/div/button[1]    #点击删除确认按钮
+    sleep    2
+    Page Should Not Contain    test00004    #验证页面不包括“test00004”
+
+编辑
+    [Arguments]    ${name}    ${desc}
+    Reload Page
+    sleep    2
+    Click Element    //*[@id="body"]/div/div[2]/div/div[1]/table/tbody/tr[2]/td[7]/div/a[1]
+    sleep    2
+    Clear Element Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[2]/div[2]/input    #清空名称
+    sleep    2
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[2]/div[2]/input    ${name}    #输入新名称
+    Clear Element Text    xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[3]/div[2]/textarea
+    sleep    2
+    Input Text    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/form/div[3]/div[2]/textarea    ${desc}    #输入描述
+    Click Button    Xpath = /html/body/div[3]/div/div[2]/div/div/div[2]/div/div/button[1]
+    Reload Page
+    sleep    2
+    Page Should Contain    ${name}
